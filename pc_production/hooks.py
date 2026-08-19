@@ -43,6 +43,40 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
+fixtures = [
+    {
+        "dt": "Custom Field",
+        "filters": [
+            [
+                "dt",
+                "in",
+                [
+                    "Stock Reconciliation",
+                    "Stock Reconciliation Item",
+                ],
+            ]
+        ],
+    },
+    {
+        "dt": "Property Setter",
+        "filters": [
+            [
+                "doc_type",
+                "in",
+                [
+                    "Stock Reconciliation",
+                    "Stock Reconciliation Item",
+                ],
+            ]
+        ],
+    },
+]
+
+
+doctype_js = {
+    "Stock Reconciliation":
+        "public/js/stock_reconciliation.js"
+}
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -247,8 +281,31 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+# doc_events = {
+#     "Stock Entry": {
+#         "before_validate": "pc_production.stock_entry.apply_monthly_production_overhead"
+#     }
+# }
+
+
+
+doctype_js = {
+    "Stock Reconciliation":
+        "public/js/stock_reconciliation.js"
+}
+
+
 doc_events = {
     "Stock Entry": {
-        "before_validate": "pc_production.stock_entry.apply_monthly_production_overhead"
-    }
+        "before_validate":
+            "pc_production.stock_entry.apply_monthly_production_overhead"
+    },
+
+    "Stock Reconciliation": {
+        "before_validate":
+            "pc_production.stock_reconciliation.apply_stock_reconciliation_calculation",
+
+        "before_submit":
+            "pc_production.stock_reconciliation.validate_stock_reconciliation",
+    },
 }
