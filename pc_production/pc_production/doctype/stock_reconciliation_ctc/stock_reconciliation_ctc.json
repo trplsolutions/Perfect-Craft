@@ -16,6 +16,7 @@
   {
    "fieldname": "type_of_expense",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Type of Expense",
    "options": "Account",
    "read_only": 1
@@ -23,12 +24,14 @@
   {
    "fieldname": "expected_expense_amount",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Expected Expense Amount",
    "read_only": 1
   },
   {
    "fieldname": "actual_expense_amount",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Actual Expense Amount"
   },
   {
@@ -48,7 +51,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-08-19 17:29:42.929129",
+ "modified": "2026-08-19 21:17:19.685393",
  "modified_by": "Administrator",
  "module": "PC Production",
  "name": "Stock Reconciliation CTC",
