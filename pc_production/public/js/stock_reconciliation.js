@@ -211,6 +211,10 @@ function toggle_production_fields(frm) {
     frm.toggle_display(
         [
             "custom_expected_per_qty_amount",
+
+            // NEW PARENT FIELD
+            "custom_actual_per_qty_amount",
+
             "custom_actual_qty",
             "custom_adjustment_per_qty",
             "custom_production_expenses"
@@ -226,6 +230,12 @@ function clear_production_data(frm) {
 
     frm.set_value(
         "custom_expected_per_qty_amount",
+        0
+    );
+
+    // NEW PARENT FIELD
+    frm.set_value(
+        "custom_actual_per_qty_amount",
         0
     );
 
@@ -330,6 +340,12 @@ function fetch_monthly_setting(
                 if (settings.populate_document) {
                     frm.set_value(
                         "custom_expected_per_qty_amount",
+                        0
+                    );
+
+                    // NEW PARENT FIELD
+                    frm.set_value(
+                        "custom_actual_per_qty_amount",
                         0
                     );
 
@@ -497,6 +513,7 @@ function calculate_reconciliation(frm) {
         return;
     }
 
+    let total_actual_expense = 0;
     let total_adjustment = 0;
 
     (
@@ -514,10 +531,14 @@ function calculate_reconciliation(frm) {
             );
 
         /*
-         * CORRECT FORMULA:
+         * Parent total actual expense.
+         */
+        total_actual_expense +=
+            actual_expense;
+
+        /*
+         * Expected expense per qty for THIS row:
          *
-         * Expected expense per qty for THIS row
-         * =
          * Expected Expense Amount / Expected Qty
          */
         const expected_expense_per_qty =
@@ -529,8 +550,8 @@ function calculate_reconciliation(frm) {
                 : 0;
 
         /*
-         * Actual Per Qty Amount
-         * =
+         * Actual expense per qty for THIS row:
+         *
          * Actual Expense Amount / Actual Qty
          */
         const actual_per_qty =
@@ -542,14 +563,9 @@ function calculate_reconciliation(frm) {
                 : 0;
 
         /*
-         * CORRECT FORMULA:
+         * Difference for THIS expense:
          *
-         * Value After Calculation
-         * =
-         * Actual Expense Per Qty
-         * -
-         * Expected Expense Per Qty
-         * for THIS expense.
+         * Actual Per Qty - Expected Per Qty
          */
         const difference =
             (
@@ -562,6 +578,9 @@ function calculate_reconciliation(frm) {
                 )
                 : 0;
 
+        /*
+         * Child table values.
+         */
         row.actual_per_qty_amount =
             actual_per_qty;
 
@@ -572,9 +591,55 @@ function calculate_reconciliation(frm) {
             difference;
     });
 
+    /*
+     * PARENT ACTUAL PER QTY AMOUNT
+     *
+     * Total Actual Expense / Actual Qty
+     *
+     * Example:
+     *
+     * Salary       = 5,050
+     * Electricity  = 3,200
+     *
+     * Total = 8,250
+     *
+     * Actual Qty = 12,000
+     *
+     * 8,250 / 12,000
+     * = 0.6875
+     */
+    const actual_per_qty_amount =
+        actual_qty > 0
+            ? (
+                total_actual_expense /
+                actual_qty
+            )
+            : 0;
+
+    frm.set_value(
+        "custom_actual_per_qty_amount",
+        actual_per_qty_amount
+    );
+
+    /*
+     * Parent Adjustment Per Qty
+     *
+     * Actual Per Qty Amount
+     * -
+     * Expected Per Qty Amount
+     */
+    const expected_per_qty_amount =
+        flt(
+            frm.doc.custom_expected_per_qty_amount
+        );
+
+    const adjustment_per_qty =
+        actual_per_qty_amount -
+        expected_per_qty_amount;
+
     frm.set_value(
         "custom_adjustment_per_qty",
-        total_adjustment
+        adjustment_per_qty
     );
 
     frm.refresh_field(
@@ -590,9 +655,6 @@ function calculate_reconciliation(frm) {
      *
      * Frappe automatically marks the document dirty
      * when the user actually changes a field.
-     *
-     * Explicit dirty() was causing Save button to
-     * remain after saving.
      */
 }
 
