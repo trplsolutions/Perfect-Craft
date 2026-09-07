@@ -1,0 +1,315 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "amended_from",
+  "setting_section",
+  "company",
+  "cost_center",
+  "column_break_setting",
+  "month",
+  "year",
+  "from_date",
+  "to_date",
+  "posting_time",
+  "monthly_production_setting",
+  "expected_section",
+  "expected_expense_amount",
+  "expected_qty",
+  "expected_cost_per_qty",
+  "column_break_actual",
+  "actual_expense_amount",
+  "actual_produced_qty",
+  "actual_cost_per_qty",
+  "variance_section",
+  "own_adjustment_amount",
+  "upstream_adjustment_amount",
+  "total_adjustment_amount",
+  "adjustment_per_qty",
+  "expenses_section",
+  "actual_expenses",
+  "production_section",
+  "production_items",
+  "transfer_section",
+  "next_stage_transfers",
+  "control_section",
+  "stock_adjustment_account",
+  "manual_quantity_confirmation",
+  "calculation_note",
+  "output_section",
+  "stock_reconciliation",
+  "journal_entry"
+ ],
+ "fields": [
+  {
+   "default": "MEPCA-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "MEPCA-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Month End Production Cost Adjustment",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "setting_section",
+   "fieldtype": "Section Break",
+   "label": "Month-End Period"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Cost Center",
+   "options": "Cost Center",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_setting",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "month",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Month",
+   "options": "\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember",
+   "reqd": 1
+  },
+  {
+   "fieldname": "year",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date / Posting Date",
+   "reqd": 1
+  },
+  {
+   "default": "23:59:59",
+   "fieldname": "posting_time",
+   "fieldtype": "Time",
+   "label": "Month-End Posting Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "monthly_production_setting",
+   "fieldtype": "Link",
+   "label": "Monthly Production Setting",
+   "options": "Monthly Production Setting",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "expected_section",
+   "fieldtype": "Section Break",
+   "label": "Expected vs Actual"
+  },
+  {
+   "fieldname": "expected_expense_amount",
+   "fieldtype": "Currency",
+   "label": "Expected Expense",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expected_qty",
+   "fieldtype": "Float",
+   "label": "Expected Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expected_cost_per_qty",
+   "fieldtype": "Currency",
+   "label": "Expected Cost / Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_actual",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "actual_expense_amount",
+   "fieldtype": "Currency",
+   "label": "Actual Expense",
+   "read_only": 1
+  },
+  {
+   "fieldname": "actual_produced_qty",
+   "fieldtype": "Float",
+   "label": "Actual Produced Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "actual_cost_per_qty",
+   "fieldtype": "Currency",
+   "label": "Actual Own Cost / Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "variance_section",
+   "fieldtype": "Section Break",
+   "label": "Month-End Variance"
+  },
+  {
+   "fieldname": "own_adjustment_amount",
+   "fieldtype": "Currency",
+   "label": "Own Cost Center Variance",
+   "read_only": 1
+  },
+  {
+   "fieldname": "upstream_adjustment_amount",
+   "fieldtype": "Currency",
+   "label": "Upstream Variance Carried In",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_adjustment_amount",
+   "fieldtype": "Currency",
+   "label": "Total Variance to Allocate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "adjustment_per_qty",
+   "fieldtype": "Currency",
+   "label": "Total Variance / Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expenses_section",
+   "fieldtype": "Section Break",
+   "label": "Actual Expense Detail"
+  },
+  {
+   "fieldname": "actual_expenses",
+   "fieldtype": "Table",
+   "label": "Actual Expenses",
+   "options": "Month End Production Cost Expense",
+   "reqd": 1
+  },
+  {
+   "fieldname": "production_section",
+   "fieldtype": "Section Break",
+   "label": "Produced / Remaining / Sold"
+  },
+  {
+   "fieldname": "production_items",
+   "fieldtype": "Table",
+   "label": "Production Items",
+   "options": "Month End Production Cost Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "transfer_section",
+   "fieldtype": "Section Break",
+   "label": "Consumed by Next Production Stage"
+  },
+  {
+   "fieldname": "next_stage_transfers",
+   "fieldtype": "Table",
+   "label": "Next Stage Transfers",
+   "options": "Month End Production Cost Transfer"
+  },
+  {
+   "fieldname": "control_section",
+   "fieldtype": "Section Break",
+   "label": "Posting Controls"
+  },
+  {
+   "fieldname": "stock_adjustment_account",
+   "fieldtype": "Link",
+   "label": "Stock Adjustment Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "Required only when the system flags mixed/opening stock or another uncertain quantity attribution. Check this only after reviewing Remaining Qty, Sold Qty and Carry Forward Qty.",
+   "fieldname": "manual_quantity_confirmation",
+   "fieldtype": "Check",
+   "label": "I Confirm Manually Reviewed Quantities"
+  },
+  {
+   "fieldname": "calculation_note",
+   "fieldtype": "Small Text",
+   "label": "Calculation Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "output_section",
+   "fieldtype": "Section Break",
+   "label": "Generated Accounting Documents"
+  },
+  {
+   "fieldname": "stock_reconciliation",
+   "fieldtype": "Link",
+   "label": "Stock Reconciliation",
+   "no_copy": 1,
+   "options": "Stock Reconciliation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "journal_entry",
+   "fieldtype": "Link",
+   "label": "Journal Entry",
+   "no_copy": 1,
+   "options": "Journal Entry",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "module": "PC Production",
+ "name": "Month End Production Cost Adjustment",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

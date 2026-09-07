@@ -1,0 +1,134 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "stock_uom",
+  "produced_qty",
+  "opening_qty",
+  "other_receipt_qty",
+  "closing_qty",
+  "next_stage_qty",
+  "remaining_qty",
+  "sold_qty",
+  "cogs_account",
+  "manual_review",
+  "review_reason",
+  "has_serial_no",
+  "has_batch_no"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "stock_uom",
+   "fieldtype": "Link",
+   "label": "Stock UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "produced_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Produced Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "opening_qty",
+   "fieldtype": "Float",
+   "label": "Opening Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "other_receipt_qty",
+   "fieldtype": "Float",
+   "label": "Other Receipt Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "closing_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Closing Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "next_stage_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Next Stage Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remaining_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Remaining Qty",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sold_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Sold / Final Issue Qty",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cogs_account",
+   "fieldtype": "Link",
+   "label": "COGS / Final Expense Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "manual_review",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Manual Review",
+   "read_only": 1
+  },
+  {
+   "fieldname": "review_reason",
+   "fieldtype": "Small Text",
+   "label": "Review Reason",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "has_serial_no",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Has Serial No",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "has_batch_no",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Has Batch No",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "istable": 1,
+ "links": [],
+ "module": "PC Production",
+ "name": "Month End Production Cost Item",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
