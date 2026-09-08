@@ -73,3 +73,17 @@ doc_events = {
             "pc_production.stock_reconciliation.validate_stock_reconciliation",
     },
 }
+
+
+# Perfect Craft custom print formats
+jinja = {
+    "methods": [
+        "pc_production.print_utils.get_sales_order_print_context",
+        "pc_production.sales_invoice_print.get_sales_invoice_print_context",
+    ]
+}
+
+after_migrate = [
+    "pc_production.print_utils.ensure_sales_order_print_format",
+    "pc_production.sales_invoice_print.ensure_sales_invoice_print_format",
+]

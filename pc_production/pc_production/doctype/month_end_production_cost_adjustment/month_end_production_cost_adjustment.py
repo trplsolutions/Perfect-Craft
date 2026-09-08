@@ -142,21 +142,63 @@ class MonthEndProductionCostAdjustment(Document):
     @frappe.whitelist()
     def resolve_monthly_production_setting(self):
         """
-        User selects:
-        Company + Cost Center + Month + Year + From Date + To Date
+        Automatically load the complete month-end snapshot.
 
-        System automatically finds the submitted Monthly Production Setting.
+        User normally selects only:
+        - Month
+        - Cost Center
+
+        Company comes from the default company.
+        Year defaults to the current year.
+
+        The system then automatically:
+        - resolves Monthly Production Setting
+        - sets From Date / To Date
+        - loads expected expense data
+        - fetches production movement
+        - calculates produced / remaining / sold / next stage
         """
 
         if self.docstatus != 0:
             frappe.throw(
                 _(
-                    "Monthly Production Setting can only be resolved "
-                    "while the Month End Production Cost Adjustment is in Draft."
+                    "Month-end data can only be loaded "
+                    "while the document is in Draft."
                 )
             )
 
-        self.validate_period_selection_complete()
+        missing = []
+
+        if not self.company:
+            missing.append(
+                _("Company")
+            )
+
+        if not self.cost_center:
+            missing.append(
+                _("Cost Center")
+            )
+
+        if not self.month:
+            missing.append(
+                _("Month")
+            )
+
+        if not self.year:
+            missing.append(
+                _("Year")
+            )
+
+        if missing:
+            frappe.throw(
+                _(
+                    "Please select: {0}."
+                ).format(
+                    ", ".join(
+                        missing
+                    )
+                )
+            )
 
         setting = (
             self.get_matching_monthly_production_setting(
@@ -172,26 +214,38 @@ class MonthEndProductionCostAdjustment(Document):
             setting
         )
 
+        self.validate_selected_period()
+
+        self.build_month_snapshot(
+            force_actual_from_gl=False
+        )
+
+        self.calculate()
+
+        self.validate_expense_rows()
+        self.validate_transfer_rows()
+        self.validate_item_rows()
+
         return {
             "doc": self.as_dict()
         }
 
+
     def set_from_monthly_setting(self):
         """
-        Keep the method name so the already tested month-end logic
-        does not need to change.
+        Resolve Monthly Production Setting from:
 
-        New direction:
+        Company + Cost Center + Month + Year.
 
-        Company
-        + Cost Center
-        + Month
-        + Year
-        + Dates
-        -> Monthly Production Setting
+        From Date and To Date are fetched from the setting.
         """
 
-        if not self.has_complete_period_selection():
+        if not (
+            self.company
+            and self.cost_center
+            and self.month
+            and self.year
+        ):
             return
 
         setting = (
@@ -207,6 +261,7 @@ class MonthEndProductionCostAdjustment(Document):
         self.load_expected_values_from_setting(
             setting
         )
+
 
     def has_complete_period_selection(self):
         return bool(
@@ -439,7 +494,8 @@ class MonthEndProductionCostAdjustment(Document):
         if setting.docstatus != 1:
             frappe.throw(
                 _(
-                    "Monthly Production Setting {0} must be submitted first."
+                    "Monthly Production Setting {0} "
+                    "must be submitted first."
                 ).format(
                     frappe.bold(
                         setting.name
@@ -486,6 +542,14 @@ class MonthEndProductionCostAdjustment(Document):
                 )
             )
 
+        self.from_date = (
+            setting.from_date
+        )
+
+        self.to_date = (
+            setting.to_date
+        )
+
         self.expected_expense_amount = flt(
             setting.total_expense_amount
         )
@@ -510,6 +574,7 @@ class MonthEndProductionCostAdjustment(Document):
                     "stock_adjustment_account",
                 )
             )
+
 
     def validate_selected_period(self):
         if not self.has_complete_period_selection():
@@ -782,6 +847,15 @@ class MonthEndProductionCostAdjustment(Document):
         own_production_vouchers,
         force_actual_from_gl=False,
     ):
+        """
+        Expense accounts and expected amounts come from
+        Monthly Production Setting.
+
+        Actual Expense is ALWAYS entered manually by the user.
+
+        No GL amount is automatically fetched here.
+        """
+
         setting = frappe.get_doc(
             "Monthly Production Setting",
             self.monthly_production_setting,
@@ -806,47 +880,29 @@ class MonthEndProductionCostAdjustment(Document):
             if not source.type_of_expense:
                 continue
 
-            if (
-                source.type_of_expense
-                in existing_actual
-                and not force_actual_from_gl
-            ):
-                actual_amount = (
-                    existing_actual[
-                        source.type_of_expense
-                    ]
+            actual_amount = (
+                existing_actual.get(
+                    source.type_of_expense,
+                    0,
                 )
-
-            else:
-                actual_amount = (
-                    get_gross_actual_expense(
-                        company=self.company,
-                        cost_center=
-                            self.cost_center,
-                        account=
-                            source.type_of_expense,
-                        from_date=
-                            self.from_date,
-                        to_date=
-                            self.to_date,
-                        own_production_vouchers=
-                            own_production_vouchers,
-                    )
-                )
+            )
 
             self.append(
                 "actual_expenses",
                 {
                     "expense_account":
                         source.type_of_expense,
+
                     "expected_expense_amount":
                         flt(
                             source.expense_amount
                         ),
+
                     "actual_expense_amount":
                         actual_amount,
                 },
             )
+
 
     def build_transfer_rows(
         self,

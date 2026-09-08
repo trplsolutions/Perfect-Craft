@@ -1,0 +1,626 @@
+{% set p = get_sales_invoice_print_context(doc) %}
+{% set item_count = p["items"]|length %}
+
+<style>
+
+@page {
+    size: A4 landscape;
+    margin: 3mm;
+}
+
+.print-format {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+}
+
+.pc-root {
+    width: 100%;
+}
+
+.copy-grid {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.copy-cell {
+    width: 50%;
+    vertical-align: top;
+    padding: 0 4px;
+    box-sizing: border-box;
+}
+
+.copy-left {
+    border-right: 1px dotted #555;
+}
+
+.pc-copy {
+    font-size: 7px;
+    line-height: 1.15;
+}
+
+
+/* HEADER */
+
+.pc-company {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.pc-company-title {
+    font-size: 11px;
+    text-decoration: underline;
+    line-height: 1.1;
+}
+
+.pc-site {
+    font-size: 8px;
+    line-height: 1.1;
+    margin-top: 2px;
+}
+
+.pc-title {
+    background: #c7c7c7;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    text-align: center;
+    font-size: 10px;
+    text-decoration: underline;
+    padding: 3px 0;
+    margin-bottom: 4px;
+}
+
+
+/* INFO */
+
+.pc-info {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 7px;
+    margin-bottom: 4px;
+}
+
+.pc-info td {
+    border: 0 !important;
+    padding: 1px 2px;
+    vertical-align: top;
+    line-height: 1.15;
+}
+
+.info-label {
+    width: 15%;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.info-value {
+    width: 43%;
+}
+
+.info-right-label {
+    width: 14%;
+    font-weight: bold;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.info-right-value {
+    width: 28%;
+    text-align: right;
+}
+
+
+/* ITEMS TABLE */
+
+.pc-items {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 7px;
+}
+
+.pc-items th,
+.pc-items td {
+    border: 1px solid #000 !important;
+    padding: 2px;
+    vertical-align: middle;
+    font-size: 7px;
+    line-height: 1.08;
+}
+
+.pc-items th {
+    font-weight: bold;
+    text-align: center;
+    height: 25px;
+}
+
+.col-sr {
+    width: 7%;
+}
+
+.col-desc {
+    width: 31%;
+}
+
+.col-qty {
+    width: 13%;
+}
+
+.col-rate {
+    width: 11%;
+}
+
+.col-money {
+    width: 12.66%;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.qty-wrap {
+    display: table;
+    width: 100%;
+}
+
+.qty-number {
+    display: table-cell;
+    width: 55%;
+    text-align: right;
+    padding-right: 3px;
+}
+
+.qty-uom {
+    display: table-cell;
+    width: 45%;
+    text-align: left;
+}
+
+.item-row {
+    height: 17px;
+}
+
+.blank-row td {
+    padding: 0;
+}
+
+.total-row td {
+    height: 18px;
+}
+
+.total-label {
+    font-weight: bold;
+    text-align: right;
+}
+
+
+/* AMOUNT IN WORDS */
+
+.amount-words {
+    font-size: 6.5px;
+    margin-top: 4px;
+    text-transform: uppercase;
+}
+
+
+/* SIGNATURE */
+
+.signatures {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 12px 0;
+    table-layout: fixed;
+    margin-top: 18mm;
+    font-size: 7px;
+}
+
+.signatures td {
+    width: 33.33%;
+    border: 0 !important;
+    text-align: center;
+    padding: 0 3px;
+}
+
+.signature-line {
+    border-top: 1px solid #000;
+    padding-top: 3px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+</style>
+
+
+<div class="pc-root">
+
+<table class="copy-grid">
+
+<tr>
+
+{% for copy_no in [1, 2] %}
+
+<td class="copy-cell {% if copy_no == 1 %}copy-left{% endif %}">
+
+<div class="pc-copy">
+
+
+<!-- HEADER -->
+
+<div class="pc-company">
+
+    <div class="pc-company-title">
+        Perfect Craft 2025-2026
+    </div>
+
+    <div class="pc-site">
+        SITE, Karachi
+    </div>
+
+</div>
+
+
+<div class="pc-title">
+    SALE BILL
+</div>
+
+
+<!-- DETAILS -->
+
+<table class="pc-info">
+
+<tr>
+
+    <td class="info-label">
+        G.P No. :
+    </td>
+
+    <td class="info-value">
+        {{ p.gp_no }}
+    </td>
+
+    <td class="info-right-label">
+        Date :
+    </td>
+
+    <td class="info-right-value">
+        {{ p.date }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td class="info-label">
+        Order No. :
+    </td>
+
+    <td class="info-value">
+        {{ p.order_no }}
+    </td>
+
+    <td class="info-right-label">
+        Time :
+    </td>
+
+    <td class="info-right-value">
+        {{ p.time }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td class="info-label">
+        M/s. :
+    </td>
+
+    <td class="info-value" colspan="3">
+        {{ p.customer }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td class="info-label">
+        Address :
+    </td>
+
+    <td class="info-value" colspan="3">
+        {{ p.address }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td class="info-label">
+        Region :
+    </td>
+
+    <td class="info-value">
+        {{ p.region }}
+    </td>
+
+    <td class="info-right-label">
+        City :
+    </td>
+
+    <td class="info-right-value">
+        {{ p.city }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td class="info-label">
+        Driver Name :
+    </td>
+
+    <td class="info-value">
+        {{ p.driver_name }}
+    </td>
+
+    <td class="info-right-label">
+        Vehicle No. :
+    </td>
+
+    <td class="info-right-value">
+        {{ p.vehicle_no }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td class="info-label">
+        S/Person :
+    </td>
+
+    <td class="info-value" colspan="3">
+        {{ p.sales_person }}
+    </td>
+
+</tr>
+
+</table>
+
+
+<!-- ITEM TABLE -->
+
+<table class="pc-items">
+
+<thead>
+
+<tr>
+
+<th class="col-sr">
+    S #
+</th>
+
+<th class="col-desc">
+    Description of Goods
+</th>
+
+<th class="col-qty">
+    Quantity
+</th>
+
+<th class="col-rate">
+    Rate
+</th>
+
+<th class="col-money">
+    Gross<br>
+    Amount
+</th>
+
+<th class="col-money">
+    Tax<br>
+    Amount
+</th>
+
+<th class="col-money">
+    Net<br>
+    Amount
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+
+{% for item in p["items"] %}
+
+<tr class="item-row">
+
+<td class="text-center">
+    {{ item.idx }}
+</td>
+
+
+<td>
+    {{ item.description }}
+</td>
+
+
+<td>
+
+<div class="qty-wrap">
+
+<span class="qty-number">
+    {{ item.qty }}
+</span>
+
+<span class="qty-uom">
+    {{ item.uom }}
+</span>
+
+</div>
+
+</td>
+
+
+<td class="text-right">
+    {{ item.rate }}
+</td>
+
+
+<td class="text-right">
+    {{ item.gross }}
+</td>
+
+
+<td class="text-right">
+    {{ item.tax }}
+</td>
+
+
+<td class="text-right">
+    {{ item.net }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+
+<!-- EMPTY BODY SPACE -->
+
+<tr class="blank-row">
+
+<td style="height:
+{% if item_count <= 2 %}
+56mm
+{% elif item_count <= 5 %}
+43mm
+{% elif item_count <= 8 %}
+30mm
+{% else %}
+15mm
+{% endif %}
+;"></td>
+
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+
+</tr>
+
+
+<!-- TOTAL -->
+
+<tr class="total-row">
+
+<td></td>
+
+<td class="total-label">
+    Total :
+</td>
+
+<td class="text-center">
+    {{ p.total_qty }}
+</td>
+
+<td></td>
+
+<td class="text-right">
+    {{ p.total_gross }}
+</td>
+
+<td class="text-right">
+    {{ p.total_tax }}
+</td>
+
+<td class="text-right">
+    {{ p.total_net }}
+</td>
+
+</tr>
+
+
+</tbody>
+
+</table>
+
+
+<!-- AMOUNT IN WORDS -->
+
+<div class="amount-words">
+
+RUPEES :
+{{ p.amount_in_words }}
+ONLY.
+
+</div>
+
+
+<!-- SIGNATURES -->
+
+<table class="signatures">
+
+<tr>
+
+<td>
+
+<div class="signature-line">
+Prepared By
+</div>
+
+</td>
+
+
+<td>
+
+<div class="signature-line">
+Authorized Signature
+</div>
+
+</td>
+
+
+<td>
+
+<div class="signature-line">
+Receiver's Signature
+</div>
+
+</td>
+
+</tr>
+
+</table>
+
+
+</div>
+
+</td>
+
+{% endfor %}
+
+</tr>
+
+</table>
+
+</div>

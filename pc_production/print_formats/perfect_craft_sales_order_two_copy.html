@@ -1,0 +1,590 @@
+{% set p = get_sales_order_print_context(doc) %}
+
+<style>
+@page {
+    size: A4 landscape;
+    margin: 4mm;
+}
+
+.print-format {
+    padding: 0 !important;
+    margin: 0 !important;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+}
+
+.pc-root {
+    width: 100%;
+}
+
+.copy-grid {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.copy-cell {
+    width: 50%;
+    vertical-align: top;
+    padding: 0 5px;
+    box-sizing: border-box;
+}
+
+.copy-left {
+    border-right: 1px dotted #555;
+}
+
+/* =========================
+   GENERAL FONT SIZES
+   ========================= */
+
+.pc-copy {
+    font-size: 7px;
+    line-height: 1.18;
+}
+
+.pc-company {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.pc-company-title {
+    font-size: 11px;
+    line-height: 1.1;
+    text-decoration: underline;
+}
+
+.pc-site {
+    font-size: 8px;
+    line-height: 1.1;
+    margin-top: 2px;
+}
+
+.pc-order-title {
+    text-align: center;
+    background: #c7c7c7;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    font-size: 10px;
+    line-height: 1.1;
+    text-decoration: underline;
+    padding: 3px 0;
+    margin-bottom: 5px;
+}
+
+/* =========================
+   CUSTOMER / ORDER INFO
+   ========================= */
+
+.pc-info {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: 0 0 5px 0;
+    font-size: 7px;
+}
+
+.pc-info td {
+    border: 0 !important;
+    padding: 1px 2px;
+    line-height: 1.15;
+    vertical-align: top;
+}
+
+.pc-label {
+    width: 14%;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.pc-value {
+    width: 44%;
+    font-weight: normal;
+}
+
+.pc-date-label {
+    width: 10%;
+    font-weight: bold;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.pc-date-value {
+    width: 20%;
+    text-align: right;
+}
+
+.pc-city-label {
+    width: 10%;
+    font-weight: bold;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.pc-city-value {
+    width: 20%;
+}
+
+/* =========================
+   ITEMS TABLE
+   ========================= */
+
+.pc-items {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 7px;
+}
+
+.pc-items th,
+.pc-items td {
+    border: 1px solid #000 !important;
+    padding: 2px 2px;
+    vertical-align: middle;
+    font-size: 7px;
+    line-height: 1.1;
+}
+
+.pc-items th {
+    text-align: center;
+    font-weight: bold;
+    height: 25px;
+}
+
+.col-sr {
+    width: 7%;
+    text-align: center;
+}
+
+.col-description {
+    width: 31%;
+}
+
+.col-qty {
+    width: 13%;
+}
+
+.col-rate {
+    width: 11%;
+}
+
+.col-money {
+    width: 12.66%;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.qty-wrap {
+    width: 100%;
+    display: table;
+}
+
+.qty-number {
+    display: table-cell;
+    width: 55%;
+    text-align: right;
+    padding-right: 3px;
+}
+
+.qty-uom {
+    display: table-cell;
+    width: 45%;
+    text-align: left;
+}
+
+.pc-item-row {
+    height: 17px;
+}
+
+/*
+Keep enough empty table space to look like
+the provided reference Sales Order.
+*/
+.pc-blank-row td {
+    height: 54mm;
+    padding: 0;
+}
+
+.pc-total-row td {
+    height: 18px;
+}
+
+.pc-total-label {
+    font-weight: bold;
+    text-align: right;
+}
+
+/* =========================
+   CUSTOMER BALANCE FOOTER
+   ========================= */
+
+.pc-footer {
+    margin-top: 5px;
+    text-align: right;
+    font-size: 7px;
+    font-weight: bold;
+    line-height: 1.45;
+}
+
+.pc-footer-row {
+    white-space: nowrap;
+    margin-bottom: 1px;
+}
+
+/* =========================
+   SIGNATURES
+   ========================= */
+
+.pc-signatures {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 12px 0;
+    margin-top: 11px;
+    table-layout: fixed;
+    font-size: 7px;
+}
+
+.pc-signatures td {
+    width: 33.33%;
+    text-align: center;
+    vertical-align: bottom;
+    border: 0 !important;
+    padding: 0 3px;
+}
+
+.signature-line {
+    border-top: 1px solid #000;
+    padding-top: 3px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+</style>
+
+
+<div class="pc-root">
+
+    <table class="copy-grid">
+        <tr>
+
+        {% for copy_no in [1, 2] %}
+
+            <td class="copy-cell {% if copy_no == 1 %}copy-left{% endif %}">
+
+                <div class="pc-copy">
+
+                    <!-- COMPANY HEADER -->
+                    <div class="pc-company">
+
+                        <div class="pc-company-title">
+                            Perfect Craft 2025-2026
+                        </div>
+
+                        <div class="pc-site">
+                            SITE, Karachi
+                        </div>
+
+                    </div>
+
+
+                    <!-- SALES ORDER TITLE -->
+                    <div class="pc-order-title">
+                        SALES ORDER
+                    </div>
+
+
+                    <!-- ORDER / CUSTOMER DETAILS -->
+                    <table class="pc-info">
+
+                        <tr>
+                            <td class="pc-label">
+                                Order No. :
+                            </td>
+
+                            <td class="pc-value">
+                                {{ p.order_no }}
+                            </td>
+
+                            <td class="pc-date-label">
+                                Date :
+                            </td>
+
+                            <td class="pc-date-value">
+                                {{ p.date }}
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td class="pc-label">
+                                M/s. :
+                            </td>
+
+                            <td class="pc-value" colspan="3">
+                                {{ p.customer }}
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td class="pc-label">
+                                Address :
+                            </td>
+
+                            <td class="pc-value" colspan="3">
+                                {{ p.address }}
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td class="pc-label">
+                                Region :
+                            </td>
+
+                            <td class="pc-value">
+                                {{ p.region }}
+                            </td>
+
+                            <td class="pc-city-label">
+                                City :
+                            </td>
+
+                            <td class="pc-city-value">
+                                {{ p.city }}
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td class="pc-label">
+                                S/Person :
+                            </td>
+
+                            <td class="pc-value" colspan="3">
+                                {{ p.sales_person }}
+                            </td>
+                        </tr>
+
+                    </table>
+
+
+                    <!-- ITEMS -->
+                    <table class="pc-items">
+
+                        <thead>
+
+                            <tr>
+
+                                <th class="col-sr">
+                                    S #
+                                </th>
+
+                                <th class="col-description">
+                                    Description of Goods
+                                </th>
+
+                                <th class="col-qty">
+                                    Quantity
+                                </th>
+
+                                <th class="col-rate">
+                                    Rate
+                                </th>
+
+                                <th class="col-money">
+                                    Gross<br>
+                                    Amount
+                                </th>
+
+                                <th class="col-money">
+                                    Tax<br>
+                                    Amount
+                                </th>
+
+                                <th class="col-money">
+                                    Net<br>
+                                    Amount
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for item in p["items"] %}
+
+                                <tr class="pc-item-row">
+
+                                    <td class="text-center">
+                                        {{ item.idx }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.description }}
+                                    </td>
+
+                                    <td>
+
+                                        <div class="qty-wrap">
+
+                                            <span class="qty-number">
+                                                {{ item.qty }}
+                                            </span>
+
+                                            <span class="qty-uom">
+                                                {{ item.uom }}
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td class="text-right">
+                                        {{ item.rate }}
+                                    </td>
+
+                                    <td class="text-right">
+                                        {{ item.gross }}
+                                    </td>
+
+                                    <td class="text-right">
+                                        {{ item.tax }}
+                                    </td>
+
+                                    <td class="text-right">
+                                        {{ item.net }}
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+
+                            <!-- EMPTY PRINT AREA -->
+                            <tr class="pc-blank-row">
+
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+
+                            </tr>
+
+
+                            <!-- TOTAL -->
+                            <tr class="pc-total-row">
+
+                                <td></td>
+
+                                <td class="pc-total-label">
+                                    Total :
+                                </td>
+
+                                <td class="text-center">
+                                    {{ p.total_qty }}
+                                </td>
+
+                                <td></td>
+
+                                <td class="text-right">
+                                    {{ p.total_gross }}
+                                </td>
+
+                                <td class="text-right">
+                                    {{ p.total_tax }}
+                                </td>
+
+                                <td class="text-right">
+                                    {{ p.total_net }}
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+
+                    <!-- CUSTOMER BALANCE / AGING -->
+                    <div class="pc-footer">
+
+                        <div class="pc-footer-row">
+
+                            Last payment received on :
+                            {{ p.last_payment_date or "-" }},
+                            Rs. {{ p.last_payment_amount }}
+
+                        </div>
+
+
+                        <div class="pc-footer-row">
+
+                            Current Balance As On :
+                            {{ p.balance_date }}
+                            is Rs. {{ p.balance_amount }}
+                            {{ p.balance_type }}
+
+                        </div>
+
+
+                        <div class="pc-footer-row">
+
+                            Aging Days :
+                            &nbsp;&nbsp;&nbsp;
+                            {{ p.aging_days }}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SIGNATURES -->
+                    <table class="pc-signatures">
+
+                        <tr>
+
+                            <td>
+                                <div class="signature-line">
+                                    Prepared By
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="signature-line">
+                                    Authorized Signature
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="signature-line">
+                                    Checked By
+                                </div>
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </td>
+
+        {% endfor %}
+
+        </tr>
+    </table>
+
+</div>

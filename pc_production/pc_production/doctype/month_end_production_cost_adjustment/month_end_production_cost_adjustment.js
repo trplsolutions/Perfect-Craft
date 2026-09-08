@@ -65,78 +65,35 @@ frappe.ui.form.on(
         refresh(frm) {
             setup_year_options(frm);
 
+            /*
+             * Expense accounts come automatically
+             * from Monthly Production Setting.
+             *
+             * User should only enter Actual Expense.
+             */
             if (
-                frm.doc.docstatus === 0
+                frm.fields_dict.actual_expenses &&
+                frm.fields_dict.actual_expenses.grid
             ) {
-                frm.add_custom_button(
-                    __("Fetch / Refresh Month Data"),
-                    () => {
-                        if (
-                            !validate_period_fields(
-                                frm
-                            )
-                        ) {
-                            return;
-                        }
+                frm.fields_dict
+                    .actual_expenses
+                    .grid
+                    .cannot_add_rows = true;
 
-                        call_document_method(
-                            frm,
-                            "fetch_month_data",
-                            {
-                                force_actual_from_gl: 0
-                            }
-                        );
-                    }
-                );
-
-                frm.add_custom_button(
-                    __("Fetch Actual Expenses from GL"),
-                    () => {
-                        if (
-                            !validate_period_fields(
-                                frm
-                            )
-                        ) {
-                            return;
-                        }
-
-                        frappe.confirm(
-                            __(
-                                "This will replace the Actual Expense values with amounts reconstructed from the General Ledger for this Cost Center. Continue?"
-                            ),
-                            () => {
-                                call_document_method(
-                                    frm,
-                                    "fetch_month_data",
-                                    {
-                                        force_actual_from_gl: 1
-                                    }
-                                );
-                            }
-                        );
-                    },
-                    __("Actions")
-                );
-
-                frm.add_custom_button(
-                    __("Recalculate"),
-                    () => {
-                        if (
-                            !validate_period_fields(
-                                frm
-                            )
-                        ) {
-                            return;
-                        }
-
-                        call_document_method(
-                            frm,
-                            "recalculate"
-                        );
-                    },
-                    __("Actions")
-                );
+                frm.fields_dict
+                    .actual_expenses
+                    .grid
+                    .cannot_delete_rows = true;
             }
+
+            /*
+             * NO:
+             * - Fetch / Refresh Month Data
+             * - Fetch Actual Expenses from GL
+             * - Recalculate
+             *
+             * Everything is automatic now.
+             */
 
             if (
                 frm.doc.stock_reconciliation
@@ -182,12 +139,7 @@ frappe.ui.form.on(
                 return;
             }
 
-            clear_period_result(
-                frm,
-                true
-            );
-
-            try_fetch_monthly_setting(
+            period_selection_changed(
                 frm
             );
         },
@@ -199,11 +151,7 @@ frappe.ui.form.on(
                 return;
             }
 
-            clear_period_result(
-                frm
-            );
-
-            try_fetch_monthly_setting(
+            period_selection_changed(
                 frm
             );
         },
@@ -215,11 +163,7 @@ frappe.ui.form.on(
                 return;
             }
 
-            clear_period_result(
-                frm
-            );
-
-            try_fetch_monthly_setting(
+            period_selection_changed(
                 frm
             );
         },
@@ -231,59 +175,7 @@ frappe.ui.form.on(
                 return;
             }
 
-            clear_period_result(
-                frm
-            );
-
-            try_fetch_monthly_setting(
-                frm
-            );
-        },
-
-        from_date(frm) {
-            if (
-                frm.doc.docstatus !== 0
-            ) {
-                return;
-            }
-
-            if (
-                !validate_selected_dates(
-                    frm
-                )
-            ) {
-                return;
-            }
-
-            clear_period_result(
-                frm
-            );
-
-            try_fetch_monthly_setting(
-                frm
-            );
-        },
-
-        to_date(frm) {
-            if (
-                frm.doc.docstatus !== 0
-            ) {
-                return;
-            }
-
-            if (
-                !validate_selected_dates(
-                    frm
-                )
-            ) {
-                return;
-            }
-
-            clear_period_result(
-                frm
-            );
-
-            try_fetch_monthly_setting(
+            period_selection_changed(
                 frm
             );
         }
@@ -291,25 +183,49 @@ frappe.ui.form.on(
 );
 
 
+/*
+ * Actual Expense is entered manually.
+ *
+ * As soon as the user changes it,
+ * recalculate the month-end result.
+ */
 frappe.ui.form.on(
     "Month End Production Cost Expense",
     {
         actual_expense_amount(frm) {
-            frm.dirty();
+            if (
+                frm.doc.docstatus !== 0
+            ) {
+                return;
+            }
+
+            auto_recalculate(
+                frm
+            );
         }
     }
 );
 
 
+/*
+ * These values can be manually reviewed
+ * in exceptional stock-attribution cases.
+ *
+ * If user changes them, recalculate immediately.
+ */
 frappe.ui.form.on(
     "Month End Production Cost Item",
     {
         remaining_qty(frm) {
-            frm.dirty();
+            auto_recalculate(
+                frm
+            );
         },
 
         sold_qty(frm) {
-            frm.dirty();
+            auto_recalculate(
+                frm
+            );
         },
 
         cogs_account(frm) {
@@ -323,7 +239,9 @@ frappe.ui.form.on(
     "Month End Production Cost Transfer",
     {
         consumed_qty(frm) {
-            frm.dirty();
+            auto_recalculate(
+                frm
+            );
         },
 
         target_cost_center(frm) {
@@ -342,19 +260,24 @@ function setup_year_options(frm) {
     ];
 
     for (
-        let year = current_year - 10;
-        year <= current_year + 10;
+        let year =
+            current_year - 10;
+
+        year <=
+            current_year + 10;
+
         year++
     ) {
         years.push(
-            String(year)
+            String(
+                year
+            )
         );
     }
 
     /*
-     * If an old submitted/draft document
-     * contains a year outside the normal
-     * range, keep that value available.
+     * Keep old document year available
+     * even if it is outside the normal range.
      */
     if (
         frm.doc.year &&
@@ -396,6 +319,9 @@ function setup_year_options(frm) {
         )
     );
 
+    /*
+     * Current year automatically selected.
+     */
     if (
         frm.is_new() &&
         !frm.doc.year
@@ -410,41 +336,39 @@ function setup_year_options(frm) {
 }
 
 
-function has_period_selection(frm) {
-    return Boolean(
-        frm.doc.company &&
-        frm.doc.cost_center &&
-        frm.doc.month &&
-        frm.doc.year &&
-        frm.doc.from_date &&
-        frm.doc.to_date
+function period_selection_changed(frm) {
+    /*
+     * Clear old period results first.
+     */
+    clear_month_end_result(
+        frm
     );
-}
 
-
-function try_fetch_monthly_setting(frm) {
+    /*
+     * Do nothing until the fields needed
+     * to find Monthly Production Setting exist.
+     */
     if (
-        frm.doc.docstatus !== 0
+        !frm.doc.company ||
+        !frm.doc.cost_center ||
+        !frm.doc.month ||
+        !frm.doc.year
     ) {
         return;
     }
 
-    if (
-        !has_period_selection(
-            frm
-        )
-    ) {
-        return;
-    }
-
-    if (
-        !validate_selected_dates(
-            frm
-        )
-    ) {
-        return;
-    }
-
+    /*
+     * This one server call will now:
+     *
+     * 1. Find Monthly Production Setting
+     * 2. Fetch From Date
+     * 3. Fetch To Date
+     * 4. Fetch expected expenses
+     * 5. Fetch expected quantity
+     * 6. Find manufacturing movement
+     * 7. Calculate produced qty
+     * 8. Calculate remaining/sold/next-stage qty
+     */
     call_document_method(
         frm,
         "resolve_monthly_production_setting"
@@ -452,12 +376,19 @@ function try_fetch_monthly_setting(frm) {
 }
 
 
-function clear_period_result(
-    frm,
-    clear_stock_account = false
-) {
+function clear_month_end_result(frm) {
     frm.set_value(
         "monthly_production_setting",
+        null
+    );
+
+    frm.set_value(
+        "from_date",
+        null
+    );
+
+    frm.set_value(
+        "to_date",
         null
     );
 
@@ -521,15 +452,6 @@ function clear_period_result(
         ""
     );
 
-    if (
-        clear_stock_account
-    ) {
-        frm.set_value(
-            "stock_adjustment_account",
-            null
-        );
-    }
-
     frm.clear_table(
         "actual_expenses"
     );
@@ -556,143 +478,25 @@ function clear_period_result(
 }
 
 
-function validate_period_fields(frm) {
-    const missing = [];
-
+function auto_recalculate(frm) {
     if (
-        !frm.doc.company
+        frm.doc.docstatus !== 0
     ) {
-        missing.push(
-            __("Company")
-        );
+        return;
     }
 
     if (
-        !frm.doc.cost_center
+        !frm.doc.monthly_production_setting ||
+        !frm.doc.actual_produced_qty
     ) {
-        missing.push(
-            __("Cost Center")
-        );
+        frm.dirty();
+        return;
     }
 
-    if (
-        !frm.doc.month
-    ) {
-        missing.push(
-            __("Month")
-        );
-    }
-
-    if (
-        !frm.doc.year
-    ) {
-        missing.push(
-            __("Year")
-        );
-    }
-
-    if (
-        !frm.doc.from_date
-    ) {
-        missing.push(
-            __("From Date")
-        );
-    }
-
-    if (
-        !frm.doc.to_date
-    ) {
-        missing.push(
-            __("To Date")
-        );
-    }
-
-    if (
-        missing.length
-    ) {
-        frappe.msgprint(
-            {
-                title: __(
-                    "Missing Period Information"
-                ),
-                indicator: "orange",
-                message: __(
-                    "Please select: {0}",
-                    [
-                        missing.join(
-                            ", "
-                        )
-                    ]
-                )
-            }
-        );
-
-        return false;
-    }
-
-    if (
-        !validate_selected_dates(
-            frm
-        )
-    ) {
-        return false;
-    }
-
-    if (
-        !frm.doc.monthly_production_setting
-    ) {
-        frappe.msgprint(
-            {
-                title: __(
-                    "Monthly Production Setting Not Found"
-                ),
-                indicator: "orange",
-                message: __(
-                    "No Monthly Production Setting has been fetched for the selected Company, Cost Center, Month, Year and dates."
-                )
-            }
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-
-function validate_selected_dates(frm) {
-    if (
-        !frm.doc.from_date ||
-        !frm.doc.to_date
-    ) {
-        return true;
-    }
-
-    const difference =
-        frappe.datetime.get_diff(
-            frm.doc.to_date,
-            frm.doc.from_date
-        );
-
-    if (
-        difference < 0
-    ) {
-        frappe.msgprint(
-            {
-                title: __(
-                    "Invalid Date Range"
-                ),
-                indicator: "red",
-                message: __(
-                    "To Date cannot be before From Date."
-                )
-            }
-        );
-
-        return false;
-    }
-
-    return true;
+    call_document_method(
+        frm,
+        "recalculate"
+    );
 }
 
 

@@ -75,7 +75,8 @@
    "in_list_view": 1,
    "label": "Company",
    "options": "Company",
-   "reqd": 1
+   "reqd": 1,
+   "read_only": 1
   },
   {
    "fieldname": "cost_center",
@@ -108,13 +109,15 @@
    "fieldname": "from_date",
    "fieldtype": "Date",
    "label": "From Date",
-   "reqd": 1
+   "reqd": 1,
+   "read_only": 1
   },
   {
    "fieldname": "to_date",
    "fieldtype": "Date",
    "label": "To Date / Posting Date",
-   "reqd": 1
+   "reqd": 1,
+   "read_only": 1
   },
   {
    "default": "23:59:59",
