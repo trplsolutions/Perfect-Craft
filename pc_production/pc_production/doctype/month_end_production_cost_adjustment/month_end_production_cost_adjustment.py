@@ -2047,8 +2047,70 @@ class MonthEndProductionCostAdjustment(Document):
             self.cost_center
         )
 
-        # Do not run the old custom reconciliation formula
-        # on this automatically generated month-end document.
+        # ---------------------------------------------------------
+        # Copy Month End calculation details to Stock Reconciliation
+        # ---------------------------------------------------------
+
+        sr.custom_expected_per_qty_amount = flt(
+            self.expected_cost_per_qty
+        )
+
+        sr.custom_actual_per_qty_amount = flt(
+            self.actual_cost_per_qty
+        )
+
+        sr.custom_actual_qty = flt(
+            self.actual_produced_qty
+        )
+
+        sr.custom_adjustment_per_qty = flt(
+            self.adjustment_per_qty
+        )
+
+        # ---------------------------------------------------------
+        # Copy Production Expense detail
+        # ---------------------------------------------------------
+
+        sr.set(
+            "custom_production_expenses",
+            [],
+        )
+
+        for expense in self.actual_expenses:
+            sr.append(
+                "custom_production_expenses",
+                {
+                    "type_of_expense":
+                        expense.expense_account,
+
+                    "expected_expense_amount":
+                        flt(
+                            expense.expected_expense_amount
+                        ),
+
+                    "actual_expense_amount":
+                        flt(
+                            expense.actual_expense_amount
+                        ),
+
+                    "actual_per_qty_amount":
+                        flt(
+                            expense.actual_per_qty_amount
+                        ),
+
+                    "value_after_calculation":
+                        flt(
+                            expense.adjustment_per_qty
+                        ),
+                },
+            )
+
+        # ---------------------------------------------------------
+        # IMPORTANT:
+        # Month End has already calculated the valuation.
+        # Do not run the legacy Stock Reconciliation formula again.
+        # ---------------------------------------------------------
+
         sr.flags.skip_pc_production_reconciliation = (
             True
         )
