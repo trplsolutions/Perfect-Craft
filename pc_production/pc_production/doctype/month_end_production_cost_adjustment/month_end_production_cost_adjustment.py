@@ -274,6 +274,14 @@ class MonthEndProductionCostAdjustment(Document):
         )
 
     def validate_period_selection_complete(self):
+        """
+        Before resolving Monthly Production Setting,
+        only Company, Cost Center, Month and Year are required.
+
+        From Date and To Date are fetched automatically
+        from Monthly Production Setting.
+        """
+
         missing = []
 
         if not self.company:
@@ -294,16 +302,6 @@ class MonthEndProductionCostAdjustment(Document):
         if not self.year:
             missing.append(
                 _("Year")
-            )
-
-        if not self.from_date:
-            missing.append(
-                _("From Date")
-            )
-
-        if not self.to_date:
-            missing.append(
-                _("To Date")
             )
 
         if missing:
@@ -1502,8 +1500,8 @@ class MonthEndProductionCostAdjustment(Document):
                 _(
                     "Actual Expenses must contain exactly the expense "
                     "accounts from Monthly Production Setting {0}. "
-                    "Use Fetch / Refresh Month Data instead of adding "
-                    "or deleting expense rows manually."
+                    "Expense rows are generated automatically and "
+                    "cannot be added or deleted manually."
                 ).format(
                     frappe.bold(
                         setting.name
